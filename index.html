@@ -45,7 +45,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         // --- BASE DE DATOS DEL PRODUCTO ---
         const PRODUCT = {
@@ -86,18 +86,16 @@
 
         // --- COMPONENTE PRINCIPAL ---
         const Configurator = () => {
-            // Estado de la personalización
             const [modelColor, setModelColor] = useState(COLLAR_COLORS[0]);
-            const [size, setSize] = useState(SIZES[1]); // Default M
+            const [size, setSize] = useState(SIZES[1]); 
             const [neckSize, setNeckSize] = useState('');
-            const [isUnique, setIsUnique] = useState(false); // Bordado Si/No
+            const [isUnique, setIsUnique] = useState(false); 
             const [threadColor, setThreadColor] = useState(THREAD_COLORS[0]);
             const [petName, setPetName] = useState('');
             const [font, setFont] = useState(FONTS[0]);
             const [hasPhone, setHasPhone] = useState(false);
             const [phoneNumber, setPhoneNumber] = useState('');
 
-            // Calculadora de total
             const calculateTotal = () => {
                 let total = PRODUCT.basePrice;
                 if (isUnique) total += PRODUCT.embroideryPrice;
@@ -108,25 +106,22 @@
             return (
                 <div className="min-h-screen max-w-7xl mx-auto flex flex-col lg:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden my-8 border border-doggy-border">
                     
-                    {/* ZONA IZQUIERDA: PREVISUALIZACIÓN (STICKY) */}
+                    {/* ZONA IZQUIERDA: PREVISUALIZACIÓN */}
                     <div className="w-full lg:w-1/2 bg-doggy-base p-8 lg:p-12 relative border-b lg:border-b-0 lg:border-r border-doggy-border flex flex-col justify-center items-center">
                         <div className="sticky top-12 w-full max-w-md">
                             <h2 className="font-serif text-3xl font-bold text-center mb-2">Collar Slim {modelColor.name}</h2>
                             <p className="text-center text-sm text-gray-500 mb-8">Previsualización interactiva</p>
                             
-                            {/* Simulador visual del Collar */}
                             <div className="relative w-full aspect-[4/3] flex items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white shadow-inner transition-all duration-500"
                                  style={{ 
                                      backgroundColor: modelColor.isPattern ? '#f9f5f0' : modelColor.hex,
                                      backgroundImage: modelColor.isPattern ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(200,140,80,0.1) 10px, rgba(200,140,80,0.1) 20px)' : 'none'
                                  }}>
                                 
-                                {/* Etiqueta Logo simulada */}
                                 <div className="absolute right-8 top-1/2 -translate-y-1/2 bg-black text-white text-[10px] px-3 py-1 font-bold tracking-widest rounded-sm shadow-md">
                                     DOGGYCRAFT
                                 </div>
 
-                                {/* Simulación del Bordado */}
                                 {isUnique && petName && (
                                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-serif tracking-wide drop-shadow-md transition-colors duration-300"
                                          style={{ color: threadColor.hex }}>
@@ -134,7 +129,6 @@
                                     </div>
                                 )}
 
-                                {/* Simulación del Teléfono */}
                                 {hasPhone && phoneNumber && (
                                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-sm font-bold opacity-80"
                                          style={{ color: isUnique ? threadColor.hex : '#ffffff' }}>
@@ -142,23 +136,19 @@
                                     </div>
                                 )}
                             </div>
-
-                            <p className="text-xs text-center text-gray-400 mt-6">*Esta imagen es un render de previsualización. Las proporciones y colores reales pueden variar ligeramente.</p>
+                            <p className="text-xs text-center text-gray-400 mt-6">*Esta imagen es un render de previsualización.</p>
                         </div>
                     </div>
 
-                    {/* ZONA DERECHA: CONTROLES DE CONFIGURACIÓN */}
+                    {/* ZONA DERECHA: CONTROLES */}
                     <div className="w-full lg:w-1/2 bg-white flex flex-col h-full lg:h-[85vh]">
-                        
-                        {/* Contenedor con Scroll */}
                         <div className="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar space-y-10">
                             
-                            {/* PASO 1: MODELO Y TALLA */}
+                            {/* PASO 1 */}
                             <section>
                                 <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Paso 1</h3>
                                 <h4 className="font-serif text-2xl font-semibold mb-4">Modelo y Talla</h4>
                                 
-                                {/* Colores */}
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium mb-3">Color de la colección Slim</label>
                                     <div className="flex flex-wrap gap-3">
@@ -169,7 +159,6 @@
                                                 className={`group relative w-12 h-12 rounded-full border-2 transition-all duration-200 ${modelColor.id === color.id ? 'border-doggy-dark scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
                                             >
                                                 <div className="w-full h-full rounded-full border border-gray-200" style={{ backgroundColor: color.hex }}></div>
-                                                {/* Tooltip */}
                                                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-doggy-dark text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                                                     {color.name}
                                                 </span>
@@ -178,7 +167,6 @@
                                     </div>
                                 </div>
 
-                                {/* Tallas */}
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium mb-3">Talla del Collar</label>
                                     <div className="grid grid-cols-3 gap-3">
@@ -195,7 +183,6 @@
                                     </div>
                                 </div>
 
-                                {/* Medida del Cuello */}
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Medida exacta del cuello (cm) *</label>
                                     <p className="text-xs text-gray-500 mb-2">Indicar las medidas entre 35 y 60 cm</p>
@@ -205,19 +192,17 @@
                                         placeholder="Ej: 45"
                                         value={neckSize}
                                         onChange={(e) => setNeckSize(e.target.value)}
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-doggy-dark focus:border-doggy-dark outline-none transition-all"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-doggy-dark outline-none transition-all"
                                     />
                                 </div>
                             </section>
 
                             <hr className="border-doggy-border" />
 
-                            {/* PASO 2: BORDADO PRINCIPAL */}
+                            {/* PASO 2 */}
                             <section>
                                 <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Paso 2</h3>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h4 className="font-serif text-2xl font-semibold">¿Lo hacemos único?</h4>
-                                </div>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">¿Lo hacemos único?</h4>
                                 
                                 <div className="flex gap-4 mb-6">
                                     <button 
@@ -234,12 +219,9 @@
                                     </button>
                                 </div>
 
-                                {/* Opciones de Bordado (Aparecen solo si elige Sí) */}
                                 <div className={`space-y-6 overflow-hidden transition-all duration-500 ${isUnique ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
-                                    
-                                    {/* Color del Bordado */}
                                     <div className="bg-doggy-base p-5 rounded-xl border border-doggy-border">
-                                        <label className="block text-sm font-bold mb-4">Color del Bordado * <span className="font-normal text-gray-500">Selecciona 1 color</span></label>
+                                        <label className="block text-sm font-bold mb-4">Color del Bordado</label>
                                         <div className="grid grid-cols-5 sm:grid-cols-6 gap-y-4 gap-x-2">
                                             {THREAD_COLORS.map(tc => (
                                                 <div key={tc.id} className="flex flex-col items-center">
@@ -248,13 +230,12 @@
                                                         className={`w-8 h-8 rounded-full border shadow-sm transition-all ${threadColor.id === tc.id ? 'ring-2 ring-offset-2 ring-doggy-dark scale-110' : 'border-gray-300 hover:scale-110'}`}
                                                         style={{ backgroundColor: tc.hex }}
                                                     ></button>
-                                                    <span className="text-[8px] text-center mt-2 font-medium leading-tight px-1 uppercase">{tc.name}</span>
+                                                    <span className="text-[8px] text-center mt-2 font-medium px-1 uppercase">{tc.name}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    {/* Nombre de la Mascota */}
                                     <div>
                                         <label className="block text-sm font-bold mb-2">Nombre de la Mascota *</label>
                                         <input 
@@ -266,7 +247,6 @@
                                         />
                                     </div>
 
-                                    {/* Fuentes */}
                                     <div>
                                         <label className="block text-sm font-bold mb-3">Tipografía</label>
                                         <div className="flex flex-wrap gap-2">
@@ -286,7 +266,7 @@
 
                             <hr className="border-doggy-border" />
 
-                            {/* PASO 3: BORDADO EXTRA (ASA) */}
+                            {/* PASO 3 */}
                             <section className="pb-10">
                                 <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Paso 3</h3>
                                 <h4 className="font-serif text-2xl font-semibold mb-4">Bordado Extra (Zona del Asa)</h4>
@@ -303,7 +283,6 @@
                                     </label>
                                 </div>
 
-                                {/* Input de teléfono */}
                                 <div className={`overflow-hidden transition-all duration-300 ${hasPhone ? 'max-h-24 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
                                     <input 
                                         type="tel" 
@@ -316,7 +295,7 @@
                             </section>
                         </div>
 
-                        {/* FOOTER: RESUMEN Y BOTÓN (FIJO ABAJO) */}
+                        {/* FOOTER */}
                         <div className="bg-white border-t border-gray-200 p-6 lg:px-12 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10">
                             <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
                                 <span>Precio del producto</span>
@@ -328,3 +307,29 @@
                                     <span>+{PRODUCT.embroideryPrice.toFixed(2)} €</span>
                                 </div>
                             )}
+                            {hasPhone && (
+                                <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
+                                    <span>Bordado Extra (Teléfono)</span>
+                                    <span>+{PRODUCT.phonePrice.toFixed(2)} €</span>
+                                </div>
+                            )}
+                            
+                            <div className="flex justify-between items-center border-t border-gray-200 pt-4 mb-6">
+                                <span className="font-serif text-2xl font-bold">Total</span>
+                                <span className="font-serif text-3xl font-bold">{calculateTotal()} €</span>
+                            </div>
+
+                            <button className="w-full bg-doggy-dark text-white text-lg font-bold py-4 rounded-xl hover:bg-black transition-colors shadow-lg">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Configurator />);
+    </script>
+</body>
+</html>
