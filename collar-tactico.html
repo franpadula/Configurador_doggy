@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurador Doggycraft - Collar Táctico</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        doggy: { base: '#FAF8F5', dark: '#3E2A1E', accent: '#C88C50', border: '#E5DED5' }
+                    },
+                    fontFamily: { sans: ['Montserrat', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAF8F5; color: #3E2A1E; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #FAF8F5; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5DED5; border-radius: 10px; }
+        .pattern-bloom { background-image: radial-gradient(circle at center, #ffffff 2px, transparent 2px), radial-gradient(circle at center, #ffcc00 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- BASES DE DATOS DEL PRODUCTO ---
+        const PRODUCT = { basePrice: 36.90, uniquePrice: 6.90, phonePrice: 2.90, decorPrice: 5.90 };
+
+        const SIZES = [
+            { id: 'S', name: 'Talla S', neck: '40 - 50 cm' },
+            { id: 'M', name: 'Talla M', neck: '43 - 58 cm' },
+            { id: 'L', name: 'Talla L', neck: '50 - 65 cm' }
+        ];
+
+        const TACTICAL_MODELS = [
+            { id: 'bloom', name: 'Bloom', css: { backgroundColor: '#91c4e8' }, isPattern: true },
+            { id: 'sky', name: 'Sky', css: { backgroundColor: '#0071c5' } },
+            { id: 'velvet', name: 'Velvet', css: { backgroundColor: '#a31127' } },
+            { id: 'limoncello', name: 'Limoncello', css: { backgroundColor: '#e5df24' } },
+            { id: 'terra', name: 'Terra', css: { backgroundColor: '#8b5a2b' } },
+            { id: 'berry', name: 'Berry', css: { backgroundColor: '#c71585' } },
+            { id: 'carbon', name: 'Carbon', css: { backgroundColor: '#1a1a1a' } },
+            { id: 'universe', name: 'Universe', css: { background: 'linear-gradient(90deg, #4b0082, #00ced1)' } },
+            { id: 'sunset', name: 'Sunset', css: { background: 'linear-gradient(90deg, #ff4500, #ff8c00)' } },
+            { id: 'savage', name: 'Savage', css: { background: 'linear-gradient(90deg, #32cd32, #00ced1)' } }
+        ];
+
+        const THREAD_COLORS = [
+            { id: 'blanco', name: 'Blanco', hex: '#FFFFFF' }, { id: 'amarillo', name: 'Amarillo', hex: '#EED202' },
+            { id: 'naranja', name: 'Naranja', hex: '#FF7F00' }, { id: 'rojo', name: 'Rojo', hex: '#CC0000' },
+            { id: 'fucsia', name: 'Fucsia', hex: '#FF00FF' }, { id: 'azul_claro', name: 'Azul Claro', hex: '#87CEEB' },
+            { id: 'verde', name: 'Verde', hex: '#008000' }, { id: 'negro', name: 'Negro', hex: '#111111' },
+            { id: 'dorado_met', name: 'Dor. Metal', hex: '#B8860B' }, { id: 'plata', name: 'Plata', hex: '#C0C0C0' }
+        ];
+
+        const EMBROIDERY_COLORS_COUNT = [
+            { id: 1, label: '1 color', price: 0 },
+            { id: 2, label: '2 colores', price: 3.50 },
+            { id: 3, label: '3 colores', price: 7.00 }
+        ];
+
+        const DECORATIONS = [
+            { id: 'none', label: 'No', price: 0 },
+            { id: 'brillos', label: 'Brillos', price: 5.90 },
+            { id: 'pinchos', label: 'Pinchos', price: 5.90 }
+        ];
+
+        const FONTS = Array.from({length: 22}, (_, i) => `Fuente ${i + 1}`);
+
+        // --- COMPONENTE PRINCIPAL ---
+        const Configurator = () => {
+            const [model, setModel] = useState(TACTICAL_MODELS[6]); // Carbon por defecto
+            const [size, setSize] = useState(SIZES[1]); // M
+            const [isUnique, setIsUnique] = useState(false);
+            const [colorCount, setColorCount] = useState(EMBROIDERY_COLORS_COUNT[0]);
+            const [threadColor, setThreadColor] = useState(THREAD_COLORS[0]);
+            const [neckSize, setNeckSize] = useState('');
+            const [petName, setPetName] = useState('');
+            const [font, setFont] = useState(FONTS[0]);
+            const [hasPhone, setHasPhone] = useState(false);
+            const [phoneNumber, setPhoneNumber] = useState('');
+            const [decor, setDecor] = useState(DECORATIONS[0]);
+
+            const calculateTotal = () => {
+                let total = PRODUCT.basePrice;
+                if (isUnique) {
+                    total += PRODUCT.uniquePrice;
+                    total += colorCount.price;
+                }
+                if (hasPhone) total += PRODUCT.phonePrice;
+                if (decor.id !== 'none') total += decor.price;
+                return total;
+            };
+
+            return (
+                <div className="min-h-screen max-w-7xl mx-auto flex flex-col-reverse lg:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden my-8 border border-doggy-border">
+                    
+                    {/* --- ZONA IZQUIERDA: CONTROLES --- */}
+                    <div className="w-full lg:w-1/2 bg-white flex flex-col h-full lg:h-[85vh] lg:border-r border-doggy-border">
+                        <div className="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar space-y-10">
+                            
+                            {/* PASO 1: Modelo y Talla */}
+                            <section>
+                                <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Base</h3>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">Tamaño y Color</h4>
+                                
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium mb-3">Talla. Elige tu talla.</label>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {SIZES.map(sz => (
+                                            <button key={sz.id} onClick={() => setSize(sz)}
+                                                className={`p-4 border-2 rounded-xl text-left transition-all flex justify-between ${size.id === sz.id ? 'border-doggy-dark bg-doggy-base font-bold' : 'border-gray-200 hover:border-gray-300'}`}>
+                                                <span>{sz.id}</span>
+                                                <span className="text-sm text-gray-500 font-normal">{sz.neck}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-3">Color del Collar Táctico *</label>
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-y-4 gap-x-2">
+                                        {TACTICAL_MODELS.map(m => (
+                                            <div key={m.id} className="flex flex-col items-center">
+                                                <button onClick={() => setModel(m)} 
+                                                    className={`w-10 h-10 rounded-full border shadow-sm transition-all ${model.id === m.id ? 'ring-2 ring-offset-2 ring-doggy-dark scale-110' : 'border-gray-300 hover:scale-110'}`} 
+                                                    style={m.css}
+                                                >
+                                                    {m.isPattern && <div className="w-full h-full rounded-full pattern-bloom opacity-50"></div>}
+                                                </button>
+                                                <span className="text-[9px] text-center mt-2 font-medium leading-tight">{m.name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 2: Bordado Principal */}
+                            <section>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">¿Lo hacemos único?</h4>
+                                
+                                <div className="flex gap-4 mb-6">
+                                    <button onClick={() => setIsUnique(false)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${!isUnique ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>No (0,00 €)</button>
+                                    <button onClick={() => setIsUnique(true)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${isUnique ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>Sí (+{PRODUCT.uniquePrice.toFixed(2)} €)</button>
+                                </div>
+
+                                <div className={`space-y-6 overflow-hidden transition-all duration-500 ${isUnique ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-bold mb-3">¿Cuántos colores quieres en el bordado?</label>
+                                        <div className="flex gap-2">
+                                            {EMBROIDERY_COLORS_COUNT.map(cc => (
+                                                <button key={cc.id} onClick={() => setColorCount(cc)}
+                                                    className={`flex-1 py-3 border-2 rounded-xl text-sm transition-all ${colorCount.id === cc.id ? 'border-doggy-dark bg-doggy-base font-bold' : 'border-gray-200'}`}>
+                                                    {cc.label} <span className="block text-[10px] font-normal">({cc.price === 0 ? '0,00' : `+${cc.price.toFixed(2)}`} €)</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-doggy-base p-5 rounded-xl border border-doggy-border">
+                                        <label className="block text-sm font-bold mb-4">Color del Bordado Principal</label>
+                                        <div className="grid grid-cols-5 gap-y-4 gap-x-2">
+                                            {THREAD_COLORS.map(tc => (
+                                                <div key={tc.id} className="flex flex-col items-center">
+                                                    <button onClick={() => setThreadColor(tc)} className={`w-8 h-8 rounded-full border shadow-sm ${threadColor.id === tc.id ? 'ring-2 ring-offset-2 ring-doggy-dark scale-110' : 'border-gray-300 hover:scale-110'}`} style={{ backgroundColor: tc.hex }}></button>
+                                                    <span className="text-[8px] mt-2 font-medium uppercase text-center">{tc.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Medida del cuello para la talla {size.id} *</label>
+                                        <input type="text" placeholder={`Ej: 45cm (Entre ${size.neck})`} value={neckSize} onChange={(e) => setNeckSize(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Nombre de la Mascota *</label>
+                                        <input type="text" placeholder="Ej: Hércules" value={petName} onChange={(e) => setPetName(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-3">Tipografía</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {FONTS.slice(0,10).map(f => (
+                                                <button key={f} onClick={() => setFont(f)} className={`px-4 py-2 border rounded-full text-sm ${font === f ? 'bg-doggy-dark text-white border-doggy-dark' : 'bg-white border-gray-300'}`}>{f}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 3: Extras */}
+                            <section className="pb-10">
+                                <h4 className="font-serif text-2xl font-semibold mb-4">Extras de Seguridad y Diseño</h4>
+                                
+                                <div className="mb-8">
+                                    <label className="block text-sm font-medium mb-3">Bordado extra en la zona del asa</label>
+                                    <div className="flex gap-4 mb-4">
+                                        <button onClick={() => setHasPhone(false)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${!hasPhone ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>No (0,00 €)</button>
+                                        <button onClick={() => setHasPhone(true)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${hasPhone ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>Teléfono (+2,90 €)</button>
+                                    </div>
+                                    <div className={`overflow-hidden transition-all duration-300 ${hasPhone ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        <label className="block text-sm font-bold mb-2">Escribe el teléfono (Máximo 2) *</label>
+                                        <input type="text" placeholder="Ej: +34 600 000 000" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-3">¿Quieres añadirle pinchos o brillos?</label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {DECORATIONS.map(d => (
+                                            <button key={d.id} onClick={() => setDecor(d)}
+                                                className={`p-3 border-2 rounded-xl transition-all font-medium ${decor.id === d.id ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>
+                                                {d.label} <span className="block text-xs font-normal text-gray-500">({d.price === 0 ? '0,00' : `+${d.price.toFixed(2)}`} €)</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                        </div>
+
+                        {/* FOOTER: CALCULADORA */}
+                        <div className="bg-white border-t border-gray-200 p-6 lg:px-12 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10">
+                            <div className="flex justify-between items-center mb-1 text-sm text-gray-600">
+                                <span>Precio del producto</span>
+                                <span>{PRODUCT.basePrice.toFixed(2)} €</span>
+                            </div>
+                            {isUnique && <div className="flex justify-between items-center mb-1 text-sm text-gray-600"><span>Personalización Nombre</span><span>+{PRODUCT.uniquePrice.toFixed(2)} €</span></div>}
+                            {isUnique && colorCount.price > 0 && <div className="flex justify-between items-center mb-1 text-sm text-gray-600"><span>Colores extra ({colorCount.label})</span><span>+{colorCount.price.toFixed(2)} €</span></div>}
+                            {hasPhone && <div className="flex justify-between items-center mb-1 text-sm text-gray-600"><span>Teléfono en Asa</span><span>+{PRODUCT.phonePrice.toFixed(2)} €</span></div>}
+                            {decor.id !== 'none' && <div className="flex justify-between items-center mb-3 text-sm text-gray-600"><span>Extra ({decor.label})</span><span>+{decor.price.toFixed(2)} €</span></div>}
+                            
+                            <div className="flex justify-between items-center border-t border-gray-200 pt-4 mb-4">
+                                <span className="font-serif text-2xl font-bold">Total</span>
+                                <span className="font-serif text-3xl font-bold">{calculateTotal().toFixed(2)} €</span>
+                            </div>
+
+                            <button className="w-full bg-doggy-dark text-white text-lg font-bold py-4 rounded-xl hover:bg-black transition-colors shadow-lg">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* --- ZONA DERECHA: PREVISUALIZACIÓN --- */}
+                    <div className="w-full lg:w-1/2 bg-doggy-base p-8 lg:p-12 relative border-b border-doggy-border lg:border-b-0 flex flex-col justify-center items-center">
+                        <div className="sticky top-12 w-full max-w-md">
+                            <h2 className="font-serif text-3xl font-bold text-center mb-2">Collar Táctico {model.name}</h2>
+                            <p className="text-center text-sm text-gray-500 mb-8">Ancho extrafuerte 5cm • {size.name}</p>
+                            
+                            <div className="relative w-full aspect-[4/3] flex items-center justify-center rounded-2xl shadow-inner transition-all duration-500 border-4 border-gray-900 overflow-hidden"
+                                 style={model.css}>
+                                
+                                {model.isPattern && <div className="absolute inset-0 pattern-bloom opacity-50 pointer-events-none"></div>}
+
+                                {/* Simulador Asa Táctica */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[120%] w-48 h-10 border-8 border-b-0 border-black/20 rounded-t-lg z-0" style={model.css}></div>
+
+                                {/* Simulador Pinchos / Brillos */}
+                                {decor.id === 'brillos' && (
+                                    <div className="absolute inset-x-4 top-4 flex justify-between px-4">
+                                        <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                        <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                        <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                        <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                    </div>
+                                )}
+                                {decor.id === 'pinchos' && (
+                                    <div className="absolute inset-x-4 bottom-4 flex justify-between px-4">
+                                        <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[12px] border-transparent border-b-gray-400"></div>
+                                        <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[12px] border-transparent border-b-gray-400"></div>
+                                        <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[12px] border-transparent border-b-gray-400"></div>
+                                        <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[12px] border-transparent border-b-gray-400"></div>
+                                    </div>
+                                )}
+
+                                {/* Texto Bordado Principal */}
+                                {isUnique && petName && (
+                                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-serif tracking-widest drop-shadow-lg z-10"
+                                         style={{ color: threadColor.hex }}>
+                                        {petName}
+                                    </div>
+                                )}
+
+                                {/* Teléfono en el asa */}
+                                {hasPhone && phoneNumber && (
+                                    <div className="absolute top-[35%] left-1/2 -translate-x-1/2 text-xs font-bold opacity-90 z-10"
+                                         style={{ color: isUnique ? threadColor.hex : '#ffffff' }}>
+                                        {phoneNumber}
+                                    </div>
+                                )}
+
+                                {/* Etiqueta de la marca simulada */}
+                                <div className="absolute right-4 bottom-4 bg-black/80 text-white text-[8px] px-2 py-1 font-bold tracking-widest rounded-sm">
+                                    DOGGYCRAFT
+                                </div>
+                            </div>
+                            <p className="text-xs text-center text-gray-400 mt-6">*Render interactivo. Los degradados y estampados son simulados.</p>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Configurator />);
+    </script>
+</body>
+</html>
