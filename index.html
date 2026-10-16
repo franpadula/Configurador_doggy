@@ -3,211 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurador DoggyCraft - Prototipo Capas</title>
-    
-    <!-- Tailwind CSS para el diseño -->
+    <title>Configurador Doggycraft - Collar Slim</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React y ReactDOM para la lógica interactiva -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
-    <!-- Babel para poder escribir código React moderno (JSX) directamente en el HTML -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        doggy: {
+                            base: '#FAF8F5',
+                            dark: '#3E2A1E',
+                            accent: '#C88C50',
+                            border: '#E5DED5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Estilos personalizados para asegurar que las capas se superpongan perfectamente */
-        .capa-producto {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Asegura que la imagen no se deforme */
-            pointer-events: none; /* Hace que los clics traspasen la imagen */
-            transition: opacity 0.3s ease; /* Transición suave al cambiar fotos */
-        }
-        
-        .contenedor-producto {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            aspect-ratio: 1 / 1; /* Mantiene la caja cuadrada (ideal para e-commerce) */
-            margin: 0 auto;
-        }
-
-        /* Ocultar scrollbar para estética más limpia en menús */
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { background-color: #FAF8F5; color: #3E2A1E; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #FAF8F5; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5DED5; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-100">
-
-    <!-- Aquí es donde React "dibujará" la aplicación -->
+<body>
     <div id="root"></div>
 
-    <!-- CÓDIGO DE LA APLICACIÓN (React/JSX) -->
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
-        // BASES DE DATOS DE OPCIONES
-        // Aquí es donde en el futuro pondrás las URLs de tus fotos PNG recortadas
-        const CINTAS = [
-            { id: 'roja', nombre: 'Rojo Fuego', colorHex: '#EF4444', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="20" rx="10" fill="%23EF4444" opacity="0.9"/></svg>' },
-            { id: 'azul', nombre: 'Azul Océano', colorHex: '#3B82F6', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="20" rx="10" fill="%233B82F6" opacity="0.9"/></svg>' },
-            { id: 'negra', nombre: 'Negro Noche', colorHex: '#1F2937', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="20" rx="10" fill="%231F2937" opacity="0.9"/></svg>' },
+        // --- BASE DE DATOS DEL PRODUCTO ---
+        const PRODUCT = {
+            basePrice: 34.90,
+            embroideryPrice: 8.90,
+            phonePrice: 2.90
+        };
+
+        const COLLAR_COLORS = [
+            { id: 'berry', name: 'Berry', hex: '#b50a46' },
+            { id: 'dream', name: 'Dream', hex: '#a69acc' },
+            { id: 'vichy', name: 'Vichy (Cuadros)', hex: '#d49b6a', isPattern: true },
+            { id: 'moon', name: 'Moon', hex: '#b8b9ba' },
+            { id: 'carbon', name: 'Carbon', hex: '#1a1a1a' }
         ];
 
-        const ACOLCHADOS = [
-            { id: 'gris', nombre: 'Gris Neutro', colorHex: '#9CA3AF', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="35" width="70" height="30" rx="15" fill="%239CA3AF"/></svg>' },
-            { id: 'amarillo', nombre: 'Amarillo Neón', colorHex: '#FBBF24', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="35" width="70" height="30" rx="15" fill="%23FBBF24"/></svg>' },
+        const SIZES = [
+            { id: 'S', name: 'Talla S', width: '2,5cm', neck: '35 - 45 cm' },
+            { id: 'M', name: 'Talla M', width: '2,5cm', neck: '35 - 50 cm' },
+            { id: 'L', name: 'Talla L', width: '2,5cm', neck: '40 - 60 cm' }
         ];
 
-        const HERRAJES = [
-            { id: 'plata', nombre: 'Plata (Inox)', colorHex: '#E5E7EB', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="38" width="15" height="24" rx="4" fill="%23D1D5DB" stroke="%239CA3AF" stroke-width="2"/><rect x="75" y="38" width="15" height="24" rx="4" fill="%23D1D5DB" stroke="%239CA3AF" stroke-width="2"/></svg>' },
-            { id: 'oro', nombre: 'Oro (Latón)', colorHex: '#FBBF24', imgUrl: 'data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="38" width="15" height="24" rx="4" fill="%23FDE68A" stroke="%23D97706" stroke-width="2"/><rect x="75" y="38" width="15" height="24" rx="4" fill="%23FDE68A" stroke="%23D97706" stroke-width="2"/></svg>' },
+        const THREAD_COLORS = [
+            { id: 'blanco', name: 'Blanco', hex: '#FFFFFF' }, { id: 'amarillo', name: 'Amarillo', hex: '#EED202' },
+            { id: 'amarillo_oscuro', name: 'Amarillo Osc.', hex: '#D4AF37' }, { id: 'naranja', name: 'Naranja', hex: '#FF7F00' },
+            { id: 'rojo', name: 'Rojo', hex: '#CC0000' }, { id: 'rosa_chicle', name: 'Rosa Chicle', hex: '#FF69B4' },
+            { id: 'fucsia', name: 'Fucsia', hex: '#FF00FF' }, { id: 'lila', name: 'Lila', hex: '#9966CC' },
+            { id: 'azul_claro', name: 'Azul Claro', hex: '#87CEEB' }, { id: 'azul_oscuro', name: 'Azul Oscuro', hex: '#00008B' },
+            { id: 'azul_marino', name: 'Azul Marino', hex: '#000080' }, { id: 'verde', name: 'Verde', hex: '#008000' },
+            { id: 'crema', name: 'Crema', hex: '#FFFDD0' }, { id: 'marron_caramelo', name: 'Marrón Caramelo', hex: '#C68E17' },
+            { id: 'marron_teja', name: 'Marrón Teja', hex: '#B33B24' }, { id: 'marron_blue', name: 'Marrón Blue', hex: '#5C534D' },
+            { id: 'marron_oscuro', name: 'Marrón Oscuro', hex: '#3E2A1E' }, { id: 'amarillo_neon', name: 'Am. Neón', hex: '#CCFF00' },
+            { id: 'plata', name: 'Plata', hex: '#C0C0C0' }, { id: 'negro', name: 'Negro', hex: '#111111' },
+            { id: 'dorado_met', name: 'Dor. Metal', hex: '#B8860B' }, { id: 'negro_met', name: 'Neg. Metal', hex: '#2A2A2A' }
         ];
 
-        // COMPONENTE PRINCIPAL
-        function ConfiguradorApp() {
-            // Estado para la pestaña activa
-            const [pestanaActiva, setPestanaActiva] = useState('cinta');
+        const FONTS = Array.from({length: 22}, (_, i) => `Fuente ${i + 1}`);
 
-            // Estado de las selecciones del usuario
-            const [cintaElegida, setCintaElegida] = useState(CINTAS[0]);
-            const [acolchadoElegido, setAcolchadoElegido] = useState(ACOLCHADOS[0]);
-            const [herrajeElegido, setHerrajeElegido] = useState(HERRAJES[0]);
+        // --- COMPONENTE PRINCIPAL ---
+        const Configurator = () => {
+            // Estado de la personalización
+            const [modelColor, setModelColor] = useState(COLLAR_COLORS[0]);
+            const [size, setSize] = useState(SIZES[1]); // Default M
+            const [neckSize, setNeckSize] = useState('');
+            const [isUnique, setIsUnique] = useState(false); // Bordado Si/No
+            const [threadColor, setThreadColor] = useState(THREAD_COLORS[0]);
+            const [petName, setPetName] = useState('');
+            const [font, setFont] = useState(FONTS[0]);
+            const [hasPhone, setHasPhone] = useState(false);
+            const [phoneNumber, setPhoneNumber] = useState('');
+
+            // Calculadora de total
+            const calculateTotal = () => {
+                let total = PRODUCT.basePrice;
+                if (isUnique) total += PRODUCT.embroideryPrice;
+                if (hasPhone) total += PRODUCT.phonePrice;
+                return total.toFixed(2);
+            };
 
             return (
-                <div className="min-h-screen flex flex-col font-sans text-gray-800">
+                <div className="min-h-screen max-w-7xl mx-auto flex flex-col lg:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden my-8 border border-doggy-border">
                     
-                    {/* CABECERA */}
-                    <header className="bg-white px-6 py-4 border-b border-gray-200 flex justify-between items-center shadow-sm z-10">
-                        <div>
-                            <h1 className="text-xl font-bold">DoggyCraft 🇪🇸</h1>
-                            <p className="text-sm text-gray-500">Prototipo de Capas PNG</p>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                            <span className="font-bold text-xl">35,90 €</span>
-                            <button className="bg-black text-white px-5 py-2 rounded-lg font-medium hover:bg-gray-800 transition">
-                                Añadir al Carrito
-                            </button>
-                        </div>
-                    </header>
-
-                    {/* CUERPO PRINCIPAL (Layout dividido) */}
-                    <main className="flex-1 flex flex-col md:flex-row bg-white">
-                        
-                        {/* ZONA IZQUIERDA: MENÚS DE SELECCIÓN */}
-                        <aside className="w-full md:w-[400px] border-r border-gray-200 flex flex-col z-10 bg-gray-50">
+                    {/* ZONA IZQUIERDA: PREVISUALIZACIÓN (STICKY) */}
+                    <div className="w-full lg:w-1/2 bg-doggy-base p-8 lg:p-12 relative border-b lg:border-b-0 lg:border-r border-doggy-border flex flex-col justify-center items-center">
+                        <div className="sticky top-12 w-full max-w-md">
+                            <h2 className="font-serif text-3xl font-bold text-center mb-2">Collar Slim {modelColor.name}</h2>
+                            <p className="text-center text-sm text-gray-500 mb-8">Previsualización interactiva</p>
                             
-                            {/* Pestañas Superiores */}
-                            <div className="flex border-b border-gray-200 bg-white p-2">
-                                <button onClick={() => setPestanaActiva('cinta')} className={`flex-1 py-3 text-sm font-semibold rounded-md transition ${pestanaActiva === 'cinta' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}>Cinta Principal</button>
-                                <button onClick={() => setPestanaActiva('acolchado')} className={`flex-1 py-3 text-sm font-semibold rounded-md transition ${pestanaActiva === 'acolchado' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}>Acolchado</button>
-                                <button onClick={() => setPestanaActiva('herrajes')} className={`flex-1 py-3 text-sm font-semibold rounded-md transition ${pestanaActiva === 'herrajes' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}>Herrajes</button>
-                            </div>
-
-                            {/* Contenido Dinámico de la Pestaña */}
-                            <div className="p-6 flex-1 overflow-y-auto">
+                            {/* Simulador visual del Collar */}
+                            <div className="relative w-full aspect-[4/3] flex items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white shadow-inner transition-all duration-500"
+                                 style={{ 
+                                     backgroundColor: modelColor.isPattern ? '#f9f5f0' : modelColor.hex,
+                                     backgroundImage: modelColor.isPattern ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(200,140,80,0.1) 10px, rgba(200,140,80,0.1) 20px)' : 'none'
+                                 }}>
                                 
-                                {pestanaActiva === 'cinta' && (
-                                    <div>
-                                        <h3 className="text-lg font-bold mb-4">Color de la Cinta</h3>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            {CINTAS.map(cinta => (
-                                                <button 
-                                                    key={cinta.id}
-                                                    onClick={() => setCintaElegida(cinta)}
-                                                    className={`flex flex-col items-center p-3 border-2 rounded-xl bg-white transition ${cintaElegida.id === cinta.id ? 'border-black shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
-                                                >
-                                                    <div className="w-10 h-10 rounded-full mb-2 shadow-inner border border-gray-100" style={{ backgroundColor: cinta.colorHex }}></div>
-                                                    <span className="text-xs font-medium text-center">{cinta.nombre}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {pestanaActiva === 'acolchado' && (
-                                    <div>
-                                        <h3 className="text-lg font-bold mb-4">Color del Acolchado</h3>
-                                        <div className="space-y-3">
-                                            {ACOLCHADOS.map(acolchado => (
-                                                <button 
-                                                    key={acolchado.id}
-                                                    onClick={() => setAcolchadoElegido(acolchado)}
-                                                    className={`w-full flex items-center gap-4 p-4 border-2 rounded-xl bg-white transition ${acolchadoElegido.id === acolchado.id ? 'border-black shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
-                                                >
-                                                    <div className="w-8 h-8 rounded-full shadow-inner border border-gray-100" style={{ backgroundColor: acolchado.colorHex }}></div>
-                                                    <span className="text-sm font-medium">{acolchado.nombre}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {pestanaActiva === 'herrajes' && (
-                                    <div>
-                                        <h3 className="text-lg font-bold mb-4">Acabado de los Herrajes</h3>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {HERRAJES.map(herraje => (
-                                                <button 
-                                                    key={herraje.id}
-                                                    onClick={() => setHerrajeElegido(herraje)}
-                                                    className={`flex flex-col items-center p-4 border-2 rounded-xl bg-white transition ${herrajeElegido.id === herraje.id ? 'border-black shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
-                                                >
-                                                    <div className="w-12 h-12 rounded-full mb-2 shadow-inner border border-gray-200" style={{ backgroundColor: herraje.colorHex }}></div>
-                                                    <span className="text-sm font-medium">{herraje.nombre}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                <div className="mt-8 p-4 bg-blue-50 text-blue-800 text-sm rounded-lg border border-blue-100">
-                                    <strong>Nota para socios:</strong> Este panel actualizará la foto de la derecha combinando múltiples PNGs transparentes generados desde una única foto maestra.
+                                {/* Etiqueta Logo simulada */}
+                                <div className="absolute right-8 top-1/2 -translate-y-1/2 bg-black text-white text-[10px] px-3 py-1 font-bold tracking-widest rounded-sm shadow-md">
+                                    DOGGYCRAFT
                                 </div>
-                            </div>
-                        </aside>
 
-                        {/* ZONA DERECHA: VISOR VISUAL (La "Magia" de las Capas) */}
-                        <section className="flex-1 bg-white relative flex items-center justify-center p-8 overflow-hidden" style={{ backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+                                {/* Simulación del Bordado */}
+                                {isUnique && petName && (
+                                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-serif tracking-wide drop-shadow-md transition-colors duration-300"
+                                         style={{ color: threadColor.hex }}>
+                                        {petName}
+                                    </div>
+                                )}
+
+                                {/* Simulación del Teléfono */}
+                                {hasPhone && phoneNumber && (
+                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-sm font-bold opacity-80"
+                                         style={{ color: isUnique ? threadColor.hex : '#ffffff' }}>
+                                        {phoneNumber}
+                                    </div>
+                                )}
+                            </div>
+
+                            <p className="text-xs text-center text-gray-400 mt-6">*Esta imagen es un render de previsualización. Las proporciones y colores reales pueden variar ligeramente.</p>
+                        </div>
+                    </div>
+
+                    {/* ZONA DERECHA: CONTROLES DE CONFIGURACIÓN */}
+                    <div className="w-full lg:w-1/2 bg-white flex flex-col h-full lg:h-[85vh]">
+                        
+                        {/* Contenedor con Scroll */}
+                        <div className="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar space-y-10">
                             
-                            {/* EL CONTENEDOR MÁGICO DE LAS CAPAS */}
-                            <div className="contenedor-producto drop-shadow-2xl">
+                            {/* PASO 1: MODELO Y TALLA */}
+                            <section>
+                                <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Paso 1</h3>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">Modelo y Talla</h4>
                                 
-                                {/* 
-                                    IMPORTANTE PARA EL CÓDIGO FINAL:
-                                    En producción, reemplazarás "imgUrl" por las rutas a tus fotos PNG reales.
-                                    Ejemplo: <img src={`/assets/acolchados/${acolchadoElegido.id}.png`} />
-                                */}
-                                
-                                {/* Capa 1: Acolchado (Fondo) */}
-                                <img src={acolchadoElegido.imgUrl} className="capa-producto" alt="Acolchado" />
-                                
-                                {/* Capa 2: Cinta Principal (Medio) */}
-                                <img src={cintaElegida.imgUrl} className="capa-producto" alt="Cinta" />
-                                
-                                {/* Capa 3: Herrajes (Arriba del todo) */}
-                                <img src={herrajeElegido.imgUrl} className="capa-producto" alt="Herrajes" />
+                                {/* Colores */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium mb-3">Color de la colección Slim</label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {COLLAR_COLORS.map(color => (
+                                            <button 
+                                                key={color.id}
+                                                onClick={() => setModelColor(color)}
+                                                className={`group relative w-12 h-12 rounded-full border-2 transition-all duration-200 ${modelColor.id === color.id ? 'border-doggy-dark scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                                            >
+                                                <div className="w-full h-full rounded-full border border-gray-200" style={{ backgroundColor: color.hex }}></div>
+                                                {/* Tooltip */}
+                                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-doggy-dark text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                    {color.name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
 
-                                {/* Capa de Interacción (Opcional a futuro): 
-                                    Aquí podríamos añadir rectángulos transparentes <div onClick={...}> 
-                                    posicionados sobre las hebillas para que el usuario pueda hacer clic 
-                                    en la propia foto y cambiar la pestaña, como hablamos antes. 
-                                */}
+                                {/* Tallas */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium mb-3">Talla del Collar</label>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {SIZES.map(sz => (
+                                            <button 
+                                                key={sz.id}
+                                                onClick={() => setSize(sz)}
+                                                className={`p-3 border rounded-xl text-center transition-all ${size.id === sz.id ? 'border-doggy-dark bg-doggy-base font-bold' : 'border-gray-200 hover:border-gray-300'}`}
+                                            >
+                                                <div className="text-xl">{sz.id}</div>
+                                                <div className="text-[10px] text-gray-500 mt-1">{sz.neck}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Medida del Cuello */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Medida exacta del cuello (cm) *</label>
+                                    <p className="text-xs text-gray-500 mb-2">Indicar las medidas entre 35 y 60 cm</p>
+                                    <input 
+                                        type="number" 
+                                        min="35" max="60"
+                                        placeholder="Ej: 45"
+                                        value={neckSize}
+                                        onChange={(e) => setNeckSize(e.target.value)}
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-doggy-dark focus:border-doggy-dark outline-none transition-all"
+                                    />
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 2: BORDADO PRINCIPAL */}
+                            <section>
+                                <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Paso 2</h3>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h4 className="font-serif text-2xl font-semibold">¿Lo hacemos único?</h4>
+                                </div>
+                                
+                                <div className="flex gap-4 mb-6">
+                                    <button 
+                                        onClick={() => setIsUnique(false)}
+                                        className={`flex-1 py-3 border-2 rounded-xl font-medium transition-all ${!isUnique ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        No (0,00 €)
+                                    </button>
+                                    <button 
+                                        onClick={() => setIsUnique(true)}
+                                        className={`flex-1 py-3 border-2 rounded-xl font-medium transition-all ${isUnique ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        Sí (+{PRODUCT.embroideryPrice.toFixed(2)} €)
+                                    </button>
+                                </div>
+
+                                {/* Opciones de Bordado (Aparecen solo si elige Sí) */}
+                                <div className={`space-y-6 overflow-hidden transition-all duration-500 ${isUnique ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
+                                    
+                                    {/* Color del Bordado */}
+                                    <div className="bg-doggy-base p-5 rounded-xl border border-doggy-border">
+                                        <label className="block text-sm font-bold mb-4">Color del Bordado * <span className="font-normal text-gray-500">Selecciona 1 color</span></label>
+                                        <div className="grid grid-cols-5 sm:grid-cols-6 gap-y-4 gap-x-2">
+                                            {THREAD_COLORS.map(tc => (
+                                                <div key={tc.id} className="flex flex-col items-center">
+                                                    <button 
+                                                        onClick={() => setThreadColor(tc)}
+                                                        className={`w-8 h-8 rounded-full border shadow-sm transition-all ${threadColor.id === tc.id ? 'ring-2 ring-offset-2 ring-doggy-dark scale-110' : 'border-gray-300 hover:scale-110'}`}
+                                                        style={{ backgroundColor: tc.hex }}
+                                                    ></button>
+                                                    <span className="text-[8px] text-center mt-2 font-medium leading-tight px-1 uppercase">{tc.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Nombre de la Mascota */}
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Nombre de la Mascota *</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ej: Hércules"
+                                            value={petName}
+                                            onChange={(e) => setPetName(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-doggy-dark outline-none"
+                                        />
+                                    </div>
+
+                                    {/* Fuentes */}
+                                    <div>
+                                        <label className="block text-sm font-bold mb-3">Tipografía</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {FONTS.map(f => (
+                                                <button 
+                                                    key={f}
+                                                    onClick={() => setFont(f)}
+                                                    className={`px-4 py-2 border rounded-full text-sm transition-all ${font === f ? 'bg-doggy-dark text-white border-doggy-dark' : 'bg-white border-gray-300 hover:bg-gray-50'}`}
+                                                >
+                                                    {f}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 3: BORDADO EXTRA (ASA) */}
+                            <section className="pb-10">
+                                <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Paso 3</h3>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">Bordado Extra (Zona del Asa)</h4>
+                                
+                                <div className="flex flex-col gap-3">
+                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${!hasPhone ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200 hover:border-gray-300'}`}>
+                                        <input type="radio" checked={!hasPhone} onChange={() => setHasPhone(false)} className="w-5 h-5 accent-doggy-dark mr-4"/>
+                                        <span className="font-medium">No (0,00 €)</span>
+                                    </label>
+                                    
+                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${hasPhone ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200 hover:border-gray-300'}`}>
+                                        <input type="radio" checked={hasPhone} onChange={() => setHasPhone(true)} className="w-5 h-5 accent-doggy-dark mr-4"/>
+                                        <span className="font-medium">Número de teléfono (+{PRODUCT.phonePrice.toFixed(2)} €)</span>
+                                    </label>
+                                </div>
+
+                                {/* Input de teléfono */}
+                                <div className={`overflow-hidden transition-all duration-300 ${hasPhone ? 'max-h-24 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                                    <input 
+                                        type="tel" 
+                                        placeholder="Ej: +34 600 000 000"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-doggy-dark outline-none"
+                                    />
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* FOOTER: RESUMEN Y BOTÓN (FIJO ABAJO) */}
+                        <div className="bg-white border-t border-gray-200 p-6 lg:px-12 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10">
+                            <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
+                                <span>Precio del producto</span>
+                                <span>{PRODUCT.basePrice.toFixed(2)} €</span>
                             </div>
-
-                        </section>
-                    </main>
-                </div>
-            );
-        }
-
-        // Iniciar la aplicación
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ConfiguradorApp />);
-    </script>
-</body>
-</html>
+                            {isUnique && (
+                                <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
+                                    <span>Personalización (Bordado)</span>
+                                    <span>+{PRODUCT.embroideryPrice.toFixed(2)} €</span>
+                                </div>
+                            )}
