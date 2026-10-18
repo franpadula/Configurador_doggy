@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurador Doggycraft - Arnés Slim</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        doggy: { base: '#FAF8F5', dark: '#3E2A1E', accent: '#C88C50', border: '#E5DED5' }
+                    },
+                    fontFamily: { sans: ['Montserrat', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #FAF8F5; color: #3E2A1E; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #FAF8F5; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5DED5; border-radius: 10px; }
+        /* Simulación del patrón Vichy por CSS */
+        .pattern-vichy {
+            background-color: #f4e8d9;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(212,155,106,0.4) 5px, rgba(212,155,106,0.4) 10px),
+                repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(212,155,106,0.4) 5px, rgba(212,155,106,0.4) 10px);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- BASES DE DATOS DEL PRODUCTO ---
+        const PRODUCT = { basePrice: 49.90, uniquePrice: 6.90, phonePrice: 2.90 };
+
+        const ARNES_MODELS = [
+            { id: 'berry', name: 'Berry', css: { backgroundColor: '#b50a46' } },
+            { id: 'carbon', name: 'Carbon', css: { backgroundColor: '#1a1a1a' } },
+            { id: 'dream', name: 'Dream', css: { backgroundColor: '#a69acc' } },
+            { id: 'moon', name: 'Moon', css: { backgroundColor: '#b8b9ba' } },
+            { id: 'vichy', name: 'Vichy', css: {}, isVichy: true }
+        ];
+
+        const SIZES = [
+            { id: 'S', name: 'Talla S', width: '2,5cm', neck: '35 - 65 cm', chest: '55 - 80 cm' },
+            { id: 'M', name: 'Talla M', width: '2,5cm', neck: '45 - 75 cm', chest: '60 - 90 cm' },
+            { id: 'L', name: 'Talla L', width: '2,5cm', neck: '55 - 85 cm', chest: '75 - 115 cm' }
+        ];
+
+        const THREAD_COLORS = [
+            { id: 'blanco', name: 'Blanco', hex: '#FFFFFF' }, { id: 'amarillo', name: 'Amarillo', hex: '#EED202' },
+            { id: 'amarillo_osc', name: 'Am. Oscuro', hex: '#D4AF37' }, { id: 'naranja', name: 'Naranja', hex: '#FF7F00' },
+            { id: 'rojo', name: 'Rojo', hex: '#CC0000' }, { id: 'rosa', name: 'Rosa Chicle', hex: '#FF69B4' },
+            { id: 'fucsia', name: 'Fucsia', hex: '#FF00FF' }, { id: 'lila', name: 'Lila', hex: '#9966CC' },
+            { id: 'azul_claro', name: 'Azul Claro', hex: '#87CEEB' }, { id: 'azul_oscuro', name: 'Azul Oscuro', hex: '#00008B' },
+            { id: 'azul_marino', name: 'Azul Marino', hex: '#000080' }, { id: 'verde', name: 'Verde', hex: '#008000' },
+            { id: 'crema', name: 'Crema', hex: '#FFFDD0' }, { id: 'marron_car', name: 'M. Caramelo', hex: '#C68E17' },
+            { id: 'marron_teja', name: 'M. Teja', hex: '#B33B24' }, { id: 'marron_blue', name: 'M. Blue', hex: '#5C534D' },
+            { id: 'marron_osc', name: 'M. Oscuro', hex: '#3E2A1E' }, { id: 'am_neon', name: 'Am. Neón', hex: '#CCFF00' },
+            { id: 'plata', name: 'Plata', hex: '#C0C0C0' }, { id: 'negro', name: 'Negro', hex: '#111111' },
+            { id: 'dorado_met', name: 'Dor. Metal', hex: '#B8860B' }, { id: 'negro_met', name: 'Neg. Metal', hex: '#2A2A2A' }
+        ];
+
+        const FONTS = Array.from({length: 24}, (_, i) => `Fuente ${i + 1}`);
+
+        const Configurator = () => {
+            const [model, setModel] = useState(ARNES_MODELS[0]); 
+            const [size, setSize] = useState(SIZES[1]); // Default M
+            const [isUnique, setIsUnique] = useState(false);
+            const [threadColor, setThreadColor] = useState(THREAD_COLORS[0]);
+            const [neckSize, setNeckSize] = useState('');
+            const [chestSize, setChestSize] = useState('');
+            const [petName, setPetName] = useState('');
+            const [font, setFont] = useState(FONTS[0]);
+            const [hasPhone, setHasPhone] = useState(false);
+            const [phoneNumber, setPhoneNumber] = useState('');
+
+            const calculateTotal = () => {
+                let total = PRODUCT.basePrice;
+                if (isUnique) total += PRODUCT.uniquePrice;
+                if (hasPhone) total += PRODUCT.phonePrice;
+                return total;
+            };
+
+            return (
+                <div className="min-h-screen max-w-7xl mx-auto flex flex-col-reverse lg:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden my-8 border border-doggy-border">
+                    
+                    {/* --- ZONA IZQUIERDA: CONTROLES --- */}
+                    <div className="w-full lg:w-1/2 bg-white flex flex-col h-full lg:h-[85vh] lg:border-r border-doggy-border">
+                        <div className="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar space-y-10">
+                            
+                            {/* PASO 1: Color */}
+                            <section>
+                                <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-4">Base</h3>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">Elige tu modelo Slim</h4>
+                                
+                                <div className="flex flex-wrap gap-4">
+                                    {ARNES_MODELS.map(m => (
+                                        <div key={m.id} className="flex flex-col items-center">
+                                            <button onClick={() => setModel(m)} 
+                                                className={`w-12 h-12 rounded-full border-2 shadow-sm transition-all ${m.isVichy ? 'pattern-vichy' : ''} ${model.id === m.id ? 'border-doggy-dark scale-110' : 'border-gray-200 hover:scale-105'}`} 
+                                                style={m.css}
+                                            ></button>
+                                            <span className="text-[10px] text-center mt-2 font-medium">{m.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 2: Talla */}
+                            <section>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">Tamaño. Elige tu talla.</h4>
+                                
+                                <div className="grid grid-cols-1 gap-3">
+                                    {SIZES.map(sz => (
+                                        <button key={sz.id} onClick={() => setSize(sz)}
+                                            className={`p-4 border-2 rounded-xl text-left transition-all flex flex-col ${size.id === sz.id ? 'border-doggy-dark bg-doggy-base font-bold' : 'border-gray-200 hover:border-gray-300'}`}>
+                                            <span className="text-lg">{sz.name}</span>
+                                            <span className="text-xs text-gray-500 font-normal mt-1">Cuello: {sz.neck} | Busto: {sz.chest}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 3: Bordado Principal */}
+                            <section>
+                                <h4 className="font-serif text-2xl font-semibold mb-4">¿Lo hacemos único? *</h4>
+                                
+                                <div className="flex gap-4 mb-6">
+                                    <button onClick={() => setIsUnique(false)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${!isUnique ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>No (0,00 €)</button>
+                                    <button onClick={() => setIsUnique(true)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${isUnique ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>Sí (+{PRODUCT.uniquePrice.toFixed(2)} €)</button>
+                                </div>
+
+                                <div className={`space-y-6 overflow-hidden transition-all duration-500 ${isUnique ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                    
+                                    <div className="bg-doggy-base p-5 rounded-xl border border-doggy-border">
+                                        <label className="block text-sm font-bold mb-4">Color del Bordado * <span className="font-normal text-gray-500">Selecciona 1 color</span></label>
+                                        <div className="grid grid-cols-5 sm:grid-cols-6 gap-y-4 gap-x-2">
+                                            {THREAD_COLORS.map(tc => (
+                                                <div key={tc.id} className="flex flex-col items-center">
+                                                    <button onClick={() => setThreadColor(tc)} className={`w-8 h-8 rounded-full border shadow-sm ${threadColor.id === tc.id ? 'ring-2 ring-offset-2 ring-doggy-dark scale-110' : 'border-gray-300 hover:scale-110'}`} style={{ backgroundColor: tc.hex }}></button>
+                                                    <span className="text-[8px] mt-2 font-medium uppercase text-center">{tc.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Medida Cuello Bajo *</label>
+                                        <input type="text" placeholder={`Ej: 45cm (Entre ${size.neck})`} value={neckSize} onChange={(e) => setNeckSize(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Medida Busto *</label>
+                                        <input type="text" placeholder={`Ej: 65cm (Entre ${size.chest})`} value={chestSize} onChange={(e) => setChestSize(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-2">Nombre de la Mascota *</label>
+                                        <input type="text" placeholder="Ej: Hércules" value={petName} onChange={(e) => setPetName(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-3">Elige entre nuestras fuentes predeterminadas</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {FONTS.map(f => (
+                                                <button key={f} onClick={() => setFont(f)} className={`px-4 py-2 border rounded-full text-sm ${font === f ? 'bg-doggy-dark text-white border-doggy-dark' : 'bg-white border-gray-300'}`}>{f}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <hr className="border-doggy-border" />
+
+                            {/* PASO 4: Bordado Extra */}
+                            <section className="pb-10">
+                                <h4 className="font-serif text-2xl font-semibold mb-4">¿Bordado Extra?</h4>
+                                
+                                <div className="flex gap-4 mb-4">
+                                    <button onClick={() => setHasPhone(false)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${!hasPhone ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>No (0,00 €)</button>
+                                    <button onClick={() => setHasPhone(true)} className={`flex-1 py-3 border-2 rounded-xl transition-all ${hasPhone ? 'border-doggy-dark bg-doggy-base' : 'border-gray-200'}`}>Número de teléfono (+{PRODUCT.phonePrice.toFixed(2)} €)</button>
+                                </div>
+                                <div className={`overflow-hidden transition-all duration-300 ${hasPhone ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                    <label className="block text-sm font-bold mb-2">Escribe el número de teléfono (Máximo 2) *</label>
+                                    <input type="text" placeholder="Ej: +34 600 000 000" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-doggy-dark"/>
+                                </div>
+                            </section>
+
+                        </div>
+
+                        {/* FOOTER: CALCULADORA */}
+                        <div className="bg-white border-t border-gray-200 p-6 lg:px-12 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-10">
+                            <div className="flex justify-between items-center mb-1 text-sm text-gray-600">
+                                <span>Precio del producto</span>
+                                <span>{PRODUCT.basePrice.toFixed(2)} €</span>
+                            </div>
+                            {(isUnique || hasPhone) && (
+                                <div className="flex justify-between items-center mb-1 text-sm text-gray-600">
+                                    <span>Personalización</span>
+                                    <span>+{((isUnique ? PRODUCT.uniquePrice : 0) + (hasPhone ? PRODUCT.phonePrice : 0)).toFixed(2)} €</span>
+                                </div>
+                            )}
+                            
+                            <div className="flex justify-between items-center border-t border-gray-200 pt-4 mb-4">
+                                <span className="font-serif text-2xl font-bold">Total</span>
+                                <span className="font-serif text-3xl font-bold">{calculateTotal().toFixed(2)} €</span>
+                            </div>
+
+                            <button className="w-full bg-doggy-dark text-white text-lg font-bold py-4 rounded-xl hover:bg-black transition-colors shadow-lg">
+                                Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* --- ZONA DERECHA: PREVISUALIZACIÓN --- */}
+                    <div className="w-full lg:w-1/2 bg-doggy-base p-8 lg:p-12 relative border-b border-doggy-border lg:border-b-0 flex flex-col justify-center items-center">
+                        <div className="sticky top-12 w-full max-w-md">
+                            <h2 className="font-serif text-3xl font-bold text-center mb-2">Arnés Slim {model.name}</h2>
+                            <p className="text-center text-sm text-gray-500 mb-8">{size.name} • 2,5cm ancho</p>
+                            
+                            {/* PREVISUALIZADOR ARNÉS */}
+                            <div className="relative w-full aspect-[4/3] flex flex-col items-center justify-center rounded-2xl shadow-inner transition-all duration-500 border border-gray-300 overflow-hidden bg-white">
+                                
+                                {/* Representación del arnés */}
+                                <div className={`relative w-40 h-40 border-[16px] rounded-full z-10 ${model.isVichy ? 'pattern-vichy' : ''}`} style={!model.isVichy ? model.css : { borderColor: 'transparent' }}>
+                                    {/* Borde Vichy simulación */}
+                                    {model.isVichy && <div className="absolute inset-[-16px] border-[16px] border-transparent pattern-vichy rounded-full" style={{WebkitMask: 'radial-gradient(transparent 58%, black 60%)'}}></div>}
+                                </div>
+                                <div className={`w-8 h-20 -mt-4 z-0 ${model.isVichy ? 'pattern-vichy' : ''}`} style={model.css}></div>
+                                <div className={`w-56 h-16 border-[16px] border-t-0 rounded-b-[40px] z-10 ${model.isVichy ? 'pattern-vichy' : ''}`} style={!model.isVichy ? model.css : { borderColor: 'transparent' }}>
+                                    {model.isVichy && <div className="absolute w-56 h-16 border-[16px] border-t-0 border-transparent pattern-vichy rounded-b-[40px]" style={{WebkitMask: 'linear-gradient(black, black)'}}></div>}
+                                </div>
+
+                                {/* Texto Bordado Principal */}
+                                {isUnique && petName && (
+                                    <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 text-4xl font-serif tracking-widest drop-shadow-md z-20"
+                                         style={{ color: threadColor.hex }}>
+                                        {petName}
+                                    </div>
+                                )}
+
+                                {/* Teléfono */}
+                                {hasPhone && phoneNumber && (
+                                    <div className="absolute bottom-[25%] left-1/2 -translate-x-1/2 text-sm font-bold opacity-90 z-20"
+                                         style={{ color: isUnique ? threadColor.hex : '#333' }}>
+                                        {phoneNumber}
+                                    </div>
+                                )}
+
+                                {/* Etiqueta */}
+                                <div className="absolute right-4 bottom-4 bg-black/80 text-white text-[8px] px-2 py-1 font-bold tracking-widest rounded-sm z-20">
+                                    DOGGYCRAFT
+                                </div>
+                            </div>
+                            <p className="text-xs text-center text-gray-400 mt-6">*Render interactivo abstracto de la estructura del arnés.</p>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Configurator />);
+    </script>
+</body>
+</html>
